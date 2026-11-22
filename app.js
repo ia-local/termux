@@ -6,23 +6,17 @@ const createMenu = require('./components/menu.js');
 const renderHome = require('./components/pageHome.js');
 const renderSensors = require('./components/pageSensors.js');
 const renderServer = require('./components/pageServer.js');
+const renderChatbot = require('./components/pageChatbot.js');
 const renderHelp = require('./components/pageHelp.js');
 
-const screen = blessed.screen({
-  smartCSR: true,
-  title: 'Termux Automation HUD'
-});
-
+const screen = blessed.screen({ smartCSR: true, title: 'Termux IA HUD' });
 let mainContainer = null;
 let currentPageComponent = null;
 let activePageName = 'home';
 
 function drawInterface() {
-  if (mainContainer) {
-    mainContainer.destroy();
-  }
+  if (mainContainer) mainContainer.destroy();
 
-  // Conteneur adaptatif plein écran (s'ajuste au clavier)
   mainContainer = blessed.box({
     parent: screen,
     top: 0,
@@ -32,51 +26,38 @@ function drawInterface() {
     bg: 'black'
   });
 
-  // Injection du Header
   createMenu(mainContainer);
 
-  // Injection du Footer
   blessed.box({
     parent: mainContainer,
     top: mainContainer.height - 1,
     left: 0,
     width: '100%',
     height: 1,
-    content: ` NETWORK: ACTIVE │ HUB: ${activePageName.toUpperCase()} `,
+    content: ` IA CORE ACTIVE │ PAGE: ${activePageName.toUpperCase()} `,
     align: 'right',
     style: { bg: 'white', fg: 'black', bold: true }
   });
 
-  // Routage des pages via pavé numérique
   switch(activePageName) {
-    case 'home':
-      currentPageComponent = renderHome(mainContainer);
-      break;
-    case 'sensors':
-      currentPageComponent = renderSensors(mainContainer);
-      break;
-    case 'server':
-      currentPageComponent = renderServer(mainContainer);
-      break;
-    case 'help':
-      currentPageComponent = renderHelp(mainContainer);
-      break;
+    case 'home':    currentPageComponent = renderHome(mainContainer); break;
+    case 'sensors': currentPageComponent = renderSensors(mainContainer); break;
+    case 'server':  currentPageComponent = renderServer(mainContainer); break;
+    case 'chatbot': currentPageComponent = renderChatbot(mainContainer); break; // Nouveau
+    case 'help':    currentPageComponent = renderHelp(mainContainer); break;
   }
 
   screen.render();
 }
 
-// Événement de redimensionnement (Clavier Android ouvert/fermé)
-screen.on('resize', () => {
-  drawInterface();
-});
+screen.on('resize', () => { drawInterface(); });
 
-// Écouteurs d'événements du pavé numérique
+// Configuration du pavé numérique étendu (1 à 5)
 screen.key(['1'], () => { activePageName = 'home'; drawInterface(); });
 screen.key(['2'], () => { activePageName = 'sensors'; drawInterface(); });
 screen.key(['3'], () => { activePageName = 'server'; drawInterface(); });
-screen.key(['4'], () => { activePageName = 'help'; drawInterface(); });
+screen.key(['4'], () => { activePageName = 'chatbot'; drawInterface(); }); // Nouveau
+screen.key(['5'], () => { activePageName = 'help'; drawInterface(); });
 screen.key(['q', 'Q', 'C-c'], () => { process.exit(0); });
 
-// Lancement
 drawInterface();
